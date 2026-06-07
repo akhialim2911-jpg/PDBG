@@ -1,0 +1,8 @@
+{
+  "name": "Auction Master",
+  "description": "Professional mobile-first live player auction manager for sports tournaments with budget limits, manual/random selection and standing leaderboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
