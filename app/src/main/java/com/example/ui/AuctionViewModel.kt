@@ -22,7 +22,7 @@ import java.io.FileOutputStream
 class AuctionViewModel(private val repository: AuctionRepository) : ViewModel() {
 
     // Authentication States
-    val isLoggedIn = MutableStateFlow(false)
+    val isLoggedIn = MutableStateFlow(true)
     val userEmail = MutableStateFlow("")
     val userRole = MutableStateFlow("Admin") // "Admin" or "Viewer"
 

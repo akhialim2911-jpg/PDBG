@@ -43,17 +43,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MyApplicationTheme {
-                val isLoggedIn by viewModel.isLoggedIn.collectAsStateWithLifecycle()
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    if (!isLoggedIn) {
-                        LoginScreen(viewModel = viewModel)
-                    } else {
-                        MainNavigationContainer(viewModel = viewModel)
-                    }
+                    MainNavigationContainer(viewModel = viewModel)
                 }
             }
         }

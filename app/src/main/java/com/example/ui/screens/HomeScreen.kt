@@ -33,7 +33,6 @@ fun HomeScreen(
     val managersList by viewModel.managers.collectAsStateWithLifecycle(initialValue = emptyList())
     val playersList by viewModel.players.collectAsStateWithLifecycle(initialValue = emptyList())
     val userRole by viewModel.userRole.collectAsStateWithLifecycle()
-    val userEmail by viewModel.userEmail.collectAsStateWithLifecycle()
 
     val totalManagers = managersList.size
     val totalPlayers = playersList.size
@@ -47,7 +46,7 @@ fun HomeScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Top Profile Row
+        // Top Branding Header Row
         item {
             Row(
                 modifier = Modifier
@@ -60,45 +59,35 @@ fun HomeScreen(
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "User Avatar",
+                        imageVector = Icons.Default.Gavel,
+                        contentDescription = "Auction Master logo",
                         tint = Gold,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(40.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = if (userEmail.isNotBlank()) userEmail else "Guest Analyst",
+                            text = "Auction Master Console",
                             color = Color.White,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             fontWeight = FontWeight.Bold
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
-                                imageVector = if (userRole == "Admin") Icons.Default.Security else Icons.Default.Visibility,
-                                contentDescription = "Role Mode",
-                                tint = if (userRole == "Admin") SuccessGreen else RoyalBlue,
+                                imageVector = Icons.Default.Security,
+                                contentDescription = "Admin Mode icon",
+                                tint = SuccessGreen,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "$userRole Mode",
-                                color = if (userRole == "Admin") SuccessGreen else TextSecondary,
+                                text = "Admin Mode Active",
+                                color = SuccessGreen,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
                     }
-                }
-                IconButton(
-                    onClick = { viewModel.logout() },
-                    modifier = Modifier.testTag("logout_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Logout,
-                        contentDescription = "Logout",
-                        tint = ErrorRed
-                    )
                 }
             }
         }
