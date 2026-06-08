@@ -33,7 +33,6 @@ fun LiveAuctionScreen(
 ) {
     val activePlayer by viewModel.activePlayer.collectAsStateWithLifecycle()
     val managersStats by viewModel.managersWithStats.collectAsStateWithLifecycle(initialValue = emptyList())
-    val userRole by viewModel.userRole.collectAsStateWithLifecycle()
     val currentBid by viewModel.currentBid.collectAsStateWithLifecycle()
     val highestBidderId by viewModel.highestBidderId.collectAsStateWithLifecycle()
     val auctionNumber by viewModel.auctionNumber.collectAsStateWithLifecycle()
@@ -49,7 +48,7 @@ fun LiveAuctionScreen(
                 title = { Text("Live Bidding Room", color = Color.White, fontWeight = FontWeight.Bold) },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = DarkNavy),
                 actions = {
-                    if (isSessionActive && userRole == "Admin") {
+                    if (isSessionActive) {
                         TextButton(
                             onClick = { viewModel.stopAuctionSession() },
                             modifier = Modifier.testTag("end_auction_session_btn")
@@ -196,7 +195,7 @@ fun LiveAuctionScreen(
                         shape = RoundedCornerShape(20.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f)
+                            .weight(1.3f)
                     ) {
                         Column(
                             modifier = Modifier
@@ -226,25 +225,153 @@ fun LiveAuctionScreen(
                             }
 
                             // Massive Current Bid Display suitable for TV screens/Projectors
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 Text(
                                     text = "$${String.format("%.2f", currentBid)}",
                                     color = SuccessGreen,
-                                    fontSize = 44.sp,
+                                    fontSize = 40.sp,
                                     fontWeight = FontWeight.Black
                                 )
-                                Text(
-                                    text = "Highest Bidder: $highestBidderName",
-                                    color = Color.White,
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(top = 4.dp)
-                                )
+                                
+                                var bidderDropdownExpanded by remember { mutableStateOf(false) }
+                                Box(contentAlignment = Alignment.Center) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(SurfaceBg)
+                                            .clickable { bidderDropdownExpanded = true }
+                                            .padding(horizontal = 14.dp, vertical = 6.dp)
+                                            .testTag("highest_bidder_trigger")
+                                    ) {
+                                        Text(
+                                            text = if (highestBidderId != null) "Bidder: $highestBidderName" else "Tap to Select Bidder",
+                                            color = if (highestBidderId != null) Gold else TextSecondary,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            textAlign = TextAlign.Center
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowDropDown,
+                                            contentDescription = "Select Bidder",
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = bidderDropdownExpanded,
+                                        onDismissRequest = { bidderDropdownExpanded = false },
+                                        modifier = Modifier.background(CardBg)
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("No Bids / Reset", color = TextMuted) },
+                                            onClick = {
+                                                viewModel.updateBid(currentBid, null)
+                                                bidderDropdownExpanded = false
+                                            }
+                                        )
+                                        managersStats.forEach { mStats ->
+                                            DropdownMenuItem(
+                                                text = { 
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        horizontalArrangement = Arrangement.SpaceBetween
+                                                    ) {
+                                                        Text(mStats.manager.name, color = Color.White)
+                                                        Spacer(modifier = Modifier.width(16.dp))
+                                                        Text("$${String.format("%.0f", mStats.remainingBalance)}", color = SuccessGreen)
+                                                    }
+                                                },
+                                                onClick = {
+                                                    viewModel.updateBid(currentBid, mStats.manager.id)
+                                                    bidderDropdownExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
                             }
 
-                            // Bid Increment Shortcuts (Admin Only)
-                            if (userRole == "Admin") {
+                            // Manual entry & + - Bid Controls
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                // Incremental + - Button and Manual Bid text field Row
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    IconButton(
+                                        onClick = {
+                                            val next = (currentBid - 100.0).coerceAtLeast(0.0)
+                                            viewModel.updateBid(next, highestBidderId)
+                                        },
+                                        colors = IconButtonDefaults.iconButtonColors(containerColor = SurfaceBg),
+                                        modifier = Modifier.testTag("bid_decrement_btn")
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Remove, contentDescription = "Decrease Bid by 100", tint = Color.White)
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    // Manual Bid text field
+                                    var bidInputText by remember(currentBid) { mutableStateOf(if (currentBid == 0.0) "" else String.format("%.0f", currentBid)) }
+
+                                    OutlinedTextField(
+                                        value = bidInputText,
+                                        onValueChange = { newValue ->
+                                            bidInputText = newValue
+                                            val parsed = newValue.toDoubleOrNull()
+                                            if (parsed != null && parsed >= 0.0) {
+                                                viewModel.updateBid(parsed, highestBidderId)
+                                            } else if (newValue.isEmpty()) {
+                                                viewModel.updateBid(0.0, highestBidderId)
+                                            }
+                                        },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = Gold,
+                                            unfocusedBorderColor = SurfaceBg,
+                                            focusedTextColor = Color.White,
+                                            unfocusedTextColor = Color.White,
+                                            focusedContainerColor = SurfaceBg,
+                                            unfocusedContainerColor = SurfaceBg
+                                        ),
+                                        singleLine = true,
+                                        placeholder = { Text("Enter bid", color = TextMuted, fontSize = 12.sp) },
+                                        modifier = Modifier
+                                            .width(130.dp)
+                                            .height(50.dp)
+                                            .testTag("manual_bid_input_field"),
+                                        textStyle = androidx.compose.ui.text.TextStyle(
+                                            textAlign = TextAlign.Center,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            color = Color.White
+                                        )
+                                    )
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    IconButton(
+                                        onClick = {
+                                            val next = currentBid + 100.0
+                                            viewModel.updateBid(next, highestBidderId)
+                                        },
+                                        colors = IconButtonDefaults.iconButtonColors(containerColor = SurfaceBg),
+                                        modifier = Modifier.testTag("bid_increment_btn")
+                                    ) {
+                                        Icon(imageVector = Icons.Default.Add, contentDescription = "Increase Bid by 100", tint = Color.White)
+                                    }
+                                }
+
+                                // Quick Bid Increment Shortcuts
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -258,28 +385,22 @@ fun LiveAuctionScreen(
                                                 .clickable {
                                                     viewModel.updateBid(currentBid + amt, highestBidderId)
                                                 }
+                                                .testTag("quick_bid_${amt.toInt()}")
                                         ) {
                                             Box(
-                                                modifier = Modifier.padding(8.dp).fillMaxWidth(),
+                                                modifier = Modifier.padding(6.dp).fillMaxWidth(),
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
                                                     text = "+$${amt.toInt()}",
                                                     color = Color.White,
-                                                    fontSize = 13.sp,
+                                                    fontSize = 12.sp,
                                                     fontWeight = FontWeight.Bold
                                                 )
                                             }
                                         }
                                     }
                                 }
-                            } else {
-                                Text(
-                                    text = "Read-Only Viewer Broadcast Screen",
-                                    color = TextMuted,
-                                    fontSize = 12.sp,
-                                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic
-                                )
                             }
                         }
                     }
@@ -287,55 +408,36 @@ fun LiveAuctionScreen(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // BOTTOM SECTION: LARGE ACTION BUTTONS (Sold, Unsold)
-                    if (userRole == "Admin") {
-                        Row(
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // UNSOLD
+                        Button(
+                            onClick = { viewModel.markActivePlayerUnsold() },
+                            colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .testTag("unsold_flow_button")
                         ) {
-                            // UNSOLD
-                            Button(
-                                onClick = { viewModel.markActivePlayerUnsold() },
-                                colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .testTag("unsold_flow_button")
-                            ) {
-                                Text("UNSOLD", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
-                            }
-
-                            // SOLD
-                            Button(
-                                onClick = { showSoldDialog = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
-                                shape = RoundedCornerShape(16.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .testTag("sold_flow_button")
-                            ) {
-                                Text("SOLD", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
-                            }
+                            Text("UNSOLD", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
                         }
-                    } else {
-                        // Viewer Notice Spacer replacement
-                        Box(
+
+                        // SOLD
+                        Button(
+                            onClick = { showSoldDialog = true },
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(16.dp))
-                                .background(CardBg)
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .testTag("sold_flow_button")
                         ) {
-                            Text(
-                                text = "Bidding updates refresh in real-time. Contact local league organizer admin to make bids.",
-                                color = TextSecondary,
-                                fontSize = 13.sp,
-                                textAlign = TextAlign.Center
-                            )
+                            Text("SOLD", fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color.White)
                         }
                     }
                 }
@@ -344,7 +446,7 @@ fun LiveAuctionScreen(
 
         // SOLD CONFIRMATION DIALOG (Select franchise manager & Enter Sold Price value)
         if (showSoldDialog && activePlayer != null) {
-            var selectedManagerId by remember { mutableStateOf<Int?>(null) }
+            var selectedManagerId by remember { mutableStateOf<Int?>(highestBidderId) }
             var soldAmountText by remember { mutableStateOf(currentBid.toString()) }
             var dropdownExpanded by remember { mutableStateOf(false) }
             var inlineError by remember { mutableStateOf<String?>(null) }

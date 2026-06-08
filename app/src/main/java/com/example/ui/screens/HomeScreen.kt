@@ -32,13 +32,12 @@ fun HomeScreen(
 ) {
     val managersList by viewModel.managers.collectAsStateWithLifecycle(initialValue = emptyList())
     val playersList by viewModel.players.collectAsStateWithLifecycle(initialValue = emptyList())
-    val userRole by viewModel.userRole.collectAsStateWithLifecycle()
 
     val totalManagers = managersList.size
     val totalPlayers = playersList.size
     val soldPlayers = playersList.count { it.status == "Sold" }
     val unsoldPlayers = playersList.count { it.status == "Unsold" }
-
+ 
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -60,30 +59,23 @@ fun HomeScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Gavel,
-                        contentDescription = "Auction Master logo",
+                        contentDescription = "PDB Galacticos logo",
                         tint = Gold,
                         modifier = Modifier.size(40.dp)
                     )
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "Auction Master Console",
+                            text = "PDB Galacticos",
                             color = Color.White,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Black
                         )
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Security,
-                                contentDescription = "Admin Mode icon",
-                                tint = SuccessGreen,
-                                modifier = Modifier.size(14.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "Admin Mode Active",
-                                color = SuccessGreen,
-                                fontSize = 12.sp,
+                                text = "Auction Manager",
+                                color = Gold,
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
@@ -203,50 +195,40 @@ fun HomeScreen(
                     .padding(16.dp)
             ) {
                 Text(
-                    text = "Administrator Setup Helpers",
+                    text = "League Setup Helpers",
                     color = Color.White,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                if (userRole == "Admin") {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.loadDemoData() },
+                        colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1.2f)
+                            .height(48.dp)
+                            .testTag("load_demo_button")
                     ) {
-                        Button(
-                            onClick = { viewModel.loadDemoData() },
-                            colors = ButtonDefaults.buttonColors(containerColor = RoyalBlue),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .weight(1.2f)
-                                .height(48.dp)
-                                .testTag("load_demo_button")
-                        ) {
-                            Text("Load Demo Data", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
-
-                        Button(
-                            onClick = { viewModel.clearDatabase() },
-                            colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
-                            shape = RoundedCornerShape(12.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(48.dp)
-                                .testTag("clear_db_button")
-                        ) {
-                            Text("Reset DB", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
+                        Text("Load Demo Data", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                     }
-                } else {
-                    Text(
-                        text = "Viewing as Spectator. Log out and sign in as Administrator to reset/load demo league templates.",
-                        color = TextMuted,
-                        fontSize = 13.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+
+                    Button(
+                        onClick = { viewModel.clearDatabase() },
+                        colors = ButtonDefaults.buttonColors(containerColor = ErrorRed),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp)
+                            .testTag("clear_db_button")
+                    ) {
+                        Text("Reset DB", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

@@ -36,7 +36,6 @@ fun ManagersScreen(
     modifier: Modifier = Modifier
 ) {
     val managersList by viewModel.filteredManagers.collectAsStateWithLifecycle(initialValue = emptyList())
-    val userRole by viewModel.userRole.collectAsStateWithLifecycle()
     val searchQuery by viewModel.managerSearchQuery.collectAsStateWithLifecycle()
 
     var showAddDialog by remember { mutableStateOf(false) }
@@ -54,15 +53,13 @@ fun ManagersScreen(
             )
         },
         floatingActionButton = {
-            if (userRole == "Admin") {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true },
-                    containerColor = Gold,
-                    contentColor = DarkNavy,
-                    modifier = Modifier.testTag("add_manager_fab")
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Manager")
-                }
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = Gold,
+                contentColor = DarkNavy,
+                modifier = Modifier.testTag("add_manager_fab")
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Manager")
             }
         },
         containerColor = DarkNavy,
@@ -108,7 +105,7 @@ fun ManagersScreen(
                             color = TextMuted,
                             fontSize = 16.sp
                         )
-                        if (userRole == "Admin" && searchQuery.isBlank()) {
+                        if (searchQuery.isBlank()) {
                             Text(
                                 text = "Tap the + button to register franchises.",
                                 color = TextMuted,
@@ -129,7 +126,7 @@ fun ManagersScreen(
                     items(managersList) { stats ->
                         ManagerCardItem(
                             stats = stats,
-                            isAdmin = userRole == "Admin",
+                            isAdmin = true,
                             onDelete = { viewModel.deleteManager(stats.manager) }
                         )
                     }

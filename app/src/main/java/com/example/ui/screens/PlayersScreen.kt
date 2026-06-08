@@ -34,7 +34,6 @@ fun PlayersScreen(
     modifier: Modifier = Modifier
 ) {
     val playersList by viewModel.filteredPlayers.collectAsStateWithLifecycle(initialValue = emptyList())
-    val userRole by viewModel.userRole.collectAsStateWithLifecycle()
     val searchQuery by viewModel.playerSearchQuery.collectAsStateWithLifecycle()
     val selectedCategoryFilter by viewModel.playerCategoryFilter.collectAsStateWithLifecycle()
     val selectedStatusFilter by viewModel.playerStatusFilter.collectAsStateWithLifecycle()
@@ -57,15 +56,13 @@ fun PlayersScreen(
             )
         },
         floatingActionButton = {
-            if (userRole == "Admin") {
-                FloatingActionButton(
-                    onClick = { showAddDialog = true },
-                    containerColor = Gold,
-                    contentColor = DarkNavy,
-                    modifier = Modifier.testTag("add_player_fab")
-                ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add Player")
-                }
+            FloatingActionButton(
+                onClick = { showAddDialog = true },
+                containerColor = Gold,
+                contentColor = DarkNavy,
+                modifier = Modifier.testTag("add_player_fab")
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Add Player")
             }
         },
         containerColor = DarkNavy,
@@ -203,7 +200,7 @@ fun PlayersScreen(
                     items(playersList) { player ->
                         PlayerCardItem(
                             player = player,
-                            isAdmin = userRole == "Admin",
+                            isAdmin = true,
                             onDelete = { viewModel.deletePlayer(player) }
                         )
                     }

@@ -34,7 +34,6 @@ fun AuctionSetupScreen(
 ) {
     val managersList by viewModel.managers.collectAsStateWithLifecycle(initialValue = emptyList())
     val playersList by viewModel.players.collectAsStateWithLifecycle(initialValue = emptyList())
-    val userRole by viewModel.userRole.collectAsStateWithLifecycle()
 
     var selectedMode by remember { mutableStateOf("Random") } // "Random" or "Manual"
     var manualSearchQuery by remember { mutableStateOf("") }
@@ -226,17 +225,15 @@ fun AuctionSetupScreen(
                                     fontWeight = FontWeight.Bold
                                 )
 
-                                if (userRole == "Admin") {
-                                    Button(
-                                        onClick = {
-                                            viewModel.saveManualSequenceToDB()
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
-                                        shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.testTag("save_order_btn")
-                                    ) {
-                                        Text("Save Order", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                                    }
+                                Button(
+                                    onClick = {
+                                        viewModel.saveManualSequenceToDB()
+                                    },
+                                    colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.testTag("save_order_btn")
+                                ) {
+                                    Text("Save Order", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
 
@@ -309,26 +306,24 @@ fun AuctionSetupScreen(
                                                 }
                                             }
 
-                                            if (userRole == "Admin") {
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                                    IconButton(
-                                                        onClick = { viewModel.moveManualPlayerUp(index) },
-                                                        modifier = Modifier.size(24.dp)
-                                                    ) {
-                                                        Icon(Icons.Default.ArrowUpward, contentDescription = "Up", tint = Color.White, modifier = Modifier.size(16.dp))
-                                                    }
-                                                    IconButton(
-                                                        onClick = { viewModel.moveManualPlayerDown(index) },
-                                                        modifier = Modifier.size(24.dp)
-                                                    ) {
-                                                        Icon(Icons.Default.ArrowDownward, contentDescription = "Down", tint = Color.White, modifier = Modifier.size(16.dp))
-                                                    }
-                                                    IconButton(
-                                                        onClick = { viewModel.moveManualPlayerToTop(index) },
-                                                        modifier = Modifier.size(24.dp)
-                                                    ) {
-                                                        Icon(Icons.Default.VerticalAlignTop, contentDescription = "Top", tint = Gold, modifier = Modifier.size(16.dp))
-                                                    }
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                IconButton(
+                                                    onClick = { viewModel.moveManualPlayerUp(index) },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(Icons.Default.ArrowUpward, contentDescription = "Up", tint = Color.White, modifier = Modifier.size(16.dp))
+                                                }
+                                                IconButton(
+                                                    onClick = { viewModel.moveManualPlayerDown(index) },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(Icons.Default.ArrowDownward, contentDescription = "Down", tint = Color.White, modifier = Modifier.size(16.dp))
+                                                }
+                                                IconButton(
+                                                    onClick = { viewModel.moveManualPlayerToTop(index) },
+                                                    modifier = Modifier.size(24.dp)
+                                                ) {
+                                                    Icon(Icons.Default.VerticalAlignTop, contentDescription = "Top", tint = Gold, modifier = Modifier.size(16.dp))
                                                 }
                                             }
                                         }
