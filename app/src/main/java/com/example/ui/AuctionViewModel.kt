@@ -158,6 +158,17 @@ class AuctionViewModel(private val repository: AuctionRepository) : ViewModel() 
         }
     }
 
+    fun updateManagerBalance(manager: Manager, newBalance: Double, onResult: (Boolean, String?) -> Unit = { _, _ -> }) {
+        if (newBalance <= 0) {
+            onResult(false, "Balance must be greater than zero.")
+            return
+        }
+        viewModelScope.launch {
+            repository.updateManager(manager.copy(initialBalance = newBalance))
+            onResult(true, null)
+        }
+    }
+
     // 3. Player Actions
     fun addPlayer(
         name: String,
